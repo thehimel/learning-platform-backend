@@ -1,0 +1,10 @@
+alembic
+bcrypt
+fastapi[all]
+pre-commit
+pydantic-settings
+pytest
+python-jose[cryptography]
+psycopg2-binary
+ruff
+sqlalchemy
