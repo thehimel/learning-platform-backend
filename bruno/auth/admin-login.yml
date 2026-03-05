@@ -1,0 +1,22 @@
+info:
+  name: admin-login
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{auth}}/jwt/login"
+  body:
+    type: form-urlencoded
+    data:
+      - name: username
+        value: "{{admin_username}}"
+      - name: password
+        value: "{{admin_password}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

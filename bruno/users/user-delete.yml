@@ -1,0 +1,20 @@
+info:
+  name: user-delete
+  type: http
+  seq: 5
+
+http:
+  method: DELETE
+  url: "{{users}}/{{user_id}}"
+  body:
+    type: json
+    data: ""
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

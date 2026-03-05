@@ -1,0 +1,19 @@
+info:
+  name: admin-logout
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{auth}}/jwt/logout"
+  body:
+    type: form-urlencoded
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

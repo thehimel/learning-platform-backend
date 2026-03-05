@@ -1,0 +1,22 @@
+info:
+  name: student-register
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{auth}}/register"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{student_username}}",
+        "password": "{{student_password}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

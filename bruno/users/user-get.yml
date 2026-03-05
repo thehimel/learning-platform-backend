@@ -1,0 +1,17 @@
+info:
+  name: user-get
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{users}}/{{user_id}}"
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

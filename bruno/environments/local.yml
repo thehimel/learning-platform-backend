@@ -2,3 +2,23 @@ name: local
 variables:
   - name: host
     value: http://127.0.0.1:8000
+  - name: auth
+    value: "{{host}}/api/auth"
+  - secret: true
+    name: student_username
+  - secret: true
+    name: student_password
+  - secret: true
+    name: student_access_token
+  - name: users
+    value: "{{host}}/api/users"
+  - secret: true
+    name: admin_username
+  - secret: true
+    name: admin_password
+  - secret: true
+    name: admin_access_token
+  - secret: true
+    name: access_token
+  - secret: true
+    name: user_id

@@ -1,0 +1,27 @@
+info:
+  name: user-patch
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{users}}/{{user_id}}"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{student_username}}",
+        "password": "{{student_password}}",
+        "is_active": true,
+        "is_verified": true,
+        "role": "student"
+      }
+  auth:
+    type: bearer
+    token: "{{admin_access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
