@@ -1,13 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.router import router as api_router
 from app.config import settings
+from app.limiter import limiter, rate_limit_exceeded_handler
 from app.logger import configure_logging
 
 configure_logging()
 
 app = FastAPI()
+
+app.state.limiter = limiter  # type: ignore[attr-defined]
+app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)  # type: ignore[arg-type]
+app.add_middleware(SlowAPIMiddleware)
 
 origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()] if settings.cors_origins != "*" else ["*"]
 app.add_middleware(

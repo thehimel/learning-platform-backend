@@ -9,4 +9,5 @@ python-jose[cryptography]
 asyncpg
 fastapi-users[sqlalchemy]
 ruff
+slowapi
 sqlalchemy[asyncio]
