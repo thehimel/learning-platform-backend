@@ -5,6 +5,6 @@ pre-commit
 pydantic-settings
 pytest
 python-jose[cryptography]
-psycopg2-binary
+asyncpg
 ruff
-sqlalchemy
+sqlalchemy[asyncio]
