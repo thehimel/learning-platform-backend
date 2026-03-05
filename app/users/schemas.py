@@ -9,8 +9,9 @@ from app.users.models import UserRole
 # Fields stripped from the registration request.
 _PRIVILEGED_FIELDS = ("is_active", "is_superuser", "is_verified")
 
-# Fields stripped from the self-update request (role changes go through a dedicated admin endpoint).
-_PRIVILEGED_UPDATE_FIELDS = (*_PRIVILEGED_FIELDS, "role")
+# Fields stripped from the self-update request.
+# email is blocked until email verification is enabled (see docs/config/auth/email-setup.md).
+_PRIVILEGED_UPDATE_FIELDS = (*_PRIVILEGED_FIELDS, "role", "email")
 
 
 def _make_schema_cleaner(*fields: str):
@@ -50,8 +51,9 @@ class UserCreate(schemas.BaseUserCreate):
 class UserUpdate(schemas.BaseUserUpdate):
     """
     Only password is accepted on self-update (PATCH /api/users/me).
-    role changes are handled via a dedicated admin endpoint.
+    role and email changes are handled via a dedicated admin endpoint.
     is_active, is_superuser, is_verified are always managed server-side.
+    Email is blocked until email verification is enabled (see docs/config/auth/email-setup.md).
     """
 
     model_config = ConfigDict(json_schema_extra=_make_schema_cleaner(*_PRIVILEGED_UPDATE_FIELDS))
