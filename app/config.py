@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     # JWT: generate secret with `openssl rand -hex 32`
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
-    jwt_access_token_expire_minutes: int = 30
+    jwt_access_token_expire_minutes: int = 1440  # 1 day
     jwt_token_type: str = "bearer"
 
     # CORS: "*" allows all origins (dev only); use comma-separated list for production.
