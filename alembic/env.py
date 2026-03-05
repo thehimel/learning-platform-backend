@@ -16,6 +16,7 @@ from app.config import settings
 # Import all models here so their tables register with Base.metadata
 # and alembic autogenerate can detect schema changes.
 from app.courses import models as courses_models  # noqa: F401
+from app.users import models as users_models  # noqa: F401
 
 config = context.config
 

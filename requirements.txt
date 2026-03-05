@@ -6,5 +6,6 @@ pydantic-settings
 pytest
 python-jose[cryptography]
 asyncpg
+fastapi-users[sqlalchemy]
 ruff
 sqlalchemy[asyncio]

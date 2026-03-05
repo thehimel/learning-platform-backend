@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # Auth: password hashed at runtime for login timing-attack mitigation when user is not found.
     auth_dummy_password: str = ""
 
+    # FastAPI Users — generate each with: openssl rand -hex 32
+    auth_reset_password_token_secret: str
+    auth_verification_token_secret: str
+
     # JWT: generate secret with `openssl rand -hex 32`
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
