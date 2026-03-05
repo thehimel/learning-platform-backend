@@ -10,7 +10,6 @@ http:
     type: json
     data: |-
       {
-        "email": "{{student_username}}",
         "password": "{{student_password}}"
       }
   auth:
