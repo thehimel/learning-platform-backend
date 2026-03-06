@@ -1,28 +1,32 @@
 from uuid import UUID
 
-from sqlalchemy import or_, select
+from sqlalchemy import delete, exists, or_, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.courses.exceptions import InvalidInstructorIdsError
-from app.courses.models import Course, CourseInstructor
+from app.courses.exceptions import (
+    AlreadyEnrolledError,
+    CourseNotFoundError,
+    InvalidInstructorIdsError,
+    NotEnrolledError,
+)
+from app.courses.models import Course, CourseEnrollment, CourseInstructor
 from app.courses.schemas import CourseCreate
 from app.users.models import User, UserRole
 
-
-def _course_load_options():
-    """Eager load options for Course → instructors → user, enrollments."""
-    return (
-        selectinload(Course.instructors).selectinload(CourseInstructor.user),
-        selectinload(Course.enrollments),
-    )
+# Eager load options for Course → instructors → user, enrollments. Reused to avoid N+1.
+_COURSE_LOAD_OPTIONS = (
+    selectinload(Course.instructors).selectinload(CourseInstructor.user),
+    selectinload(Course.enrollments),
+)
 
 
 async def list_courses(session: AsyncSession) -> list[Course]:
     """List all courses with instructors and enrolled count. Returns ORM objects; CourseRead auto-transforms."""
     stmt = (
         select(Course)
-        .options(*_course_load_options())
+        .options(*_COURSE_LOAD_OPTIONS)
         .order_by(Course.created_at.desc(), Course.id.desc())
     )
     result = await session.execute(stmt)
@@ -65,7 +69,7 @@ async def create_course(
     await session.commit()
 
     # Re-fetch with relationships for auto-transform via CourseRead
-    stmt = select(Course).where(Course.id == course.id).options(*_course_load_options())
+    stmt = select(Course).where(Course.id == course.id).options(*_COURSE_LOAD_OPTIONS)
     result = await session.execute(stmt)
     return result.scalars().one()
 
@@ -99,3 +103,52 @@ async def _validate_instructors(
         missing = [instructor_id for instructor_id in instructor_ids if instructor_id not in user_by_id]
         raise InvalidInstructorIdsError(missing)
     return users
+
+
+async def _course_exists(session: AsyncSession, course_id: int) -> bool:
+    """Check if course exists. Lighter than session.get(Course) — no ORM materialization."""
+    stmt = select(exists().where(Course.id == course_id))
+    result = await session.execute(stmt)
+    return result.scalar_one()
+
+
+async def enroll_course(course_id: int, current_user: User, session: AsyncSession) -> None:
+    """
+    Enroll current user in a course.
+
+    Raises:
+        CourseNotFoundError: if course does not exist
+        AlreadyEnrolledError: if user is already enrolled
+    """
+    if not await _course_exists(session, course_id):
+        raise CourseNotFoundError()
+
+    enrollment = CourseEnrollment(course_id=course_id, user_id=current_user.id)
+    session.add(enrollment)
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        # Unique (course_id, user_id) — already enrolled; course existence already verified
+        raise AlreadyEnrolledError from None
+
+
+async def unenroll_course(course_id: int, current_user: User, session: AsyncSession) -> None:
+    """
+    Unenroll current user from a course.
+
+    Raises:
+        CourseNotFoundError: if course does not exist
+        NotEnrolledError: if user is not enrolled
+    """
+    if not await _course_exists(session, course_id):
+        raise CourseNotFoundError()
+
+    stmt = delete(CourseEnrollment).where(
+        CourseEnrollment.course_id == course_id,
+        CourseEnrollment.user_id == current_user.id,
+    )
+    result = await session.execute(stmt)
+    if result.rowcount == 0:
+        raise NotEnrolledError()
+    await session.commit()

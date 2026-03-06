@@ -6,3 +6,5 @@ from enum import StrEnum
 class RouteName(StrEnum):
     courses_get = "courses_get"
     courses_create = "courses_create"
+    courses_enroll = "courses_enroll"
+    courses_unenroll = "courses_unenroll"

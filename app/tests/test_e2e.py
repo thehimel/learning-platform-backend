@@ -134,6 +134,48 @@ class TestE2EInstructorFlow:
         assert len(data["instructors"]) == 1
         assert data["instructors"][0]["email"] == instructor.email
 
+    @pytest.mark.asyncio
+    async def test_student_enroll_and_unenroll(self, client_e2e, instructor_e2e, routes):
+        """Student registers, logs in, enrolls in course, then unenrolls."""
+        # Instructor creates course
+        _, instructor_token = instructor_e2e
+        create_resp = await client_e2e.post(
+            routes.courses_create,
+            json={"title": "E2E Enroll Course", "add_me_as_instructor": True, "instructor_ids": []},
+            headers=_auth_headers(instructor_token),
+        )
+        assert create_resp.status_code == 201
+        course_id = create_resp.json()["id"]
+
+        # Student registers and logs in
+        email = f"e2e-student-{uuid.uuid4().hex[:8]}@test.example"
+        password = "SecurePass1!"
+        await client_e2e.post(routes.auth_register, json={"email": email, "password": password})
+        student_token = await e2e_login(client_e2e, email, password, routes.auth_login)
+
+        # Student enrolls
+        enroll_resp = await client_e2e.post(
+            routes.courses_enroll(course_id),
+            headers=_auth_headers(student_token),
+        )
+        assert enroll_resp.status_code == 204
+
+        # Verify enrolled_count
+        list_resp = await client_e2e.get(routes.courses_get)
+        course = next(c for c in list_resp.json() if c["id"] == course_id)
+        assert course["enrolled_count"] == 1
+
+        # Student unenrolls
+        unenroll_resp = await client_e2e.delete(
+            routes.courses_unenroll(course_id),
+            headers=_auth_headers(student_token),
+        )
+        assert unenroll_resp.status_code == 204
+
+        list_resp2 = await client_e2e.get(routes.courses_get)
+        course2 = next(c for c in list_resp2.json() if c["id"] == course_id)
+        assert course2["enrolled_count"] == 0
+
 
 class TestE2EAdminFlow:
     """E2E: admin (created in DB) -> login -> manage users."""

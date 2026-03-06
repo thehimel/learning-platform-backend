@@ -2,14 +2,24 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.backend import current_instructor
+from app.auth.backend import current_active_user, current_instructor
 from app.courses.routes import RouteName
 from app.courses.error_codes import CourseErrorCode
-from app.courses.exceptions import InvalidInstructorIdsError
+from app.courses.exceptions import (
+    AlreadyEnrolledError,
+    CourseNotFoundError,
+    InvalidInstructorIdsError,
+    NotEnrolledError,
+)
 from app.exceptions import error_detail
 from app.courses.models import Course
 from app.courses.schemas import CourseCreate, CourseRead
-from app.courses.service import create_course as create_course_service, list_courses as list_courses_service
+from app.courses.service import (
+    create_course as create_course_service,
+    enroll_course as enroll_course_service,
+    list_courses as list_courses_service,
+    unenroll_course as unenroll_course_service,
+)
 from app.database import get_db
 from app.users.models import User
 
@@ -53,4 +63,46 @@ async def create_course(
                 str(e),
                 missing_ids=[str(missing_id) for missing_id in e.missing_ids],
             ),
+        )
+
+
+@router.post("/{id}/enroll", status_code=status.HTTP_204_NO_CONTENT, name=RouteName.courses_enroll)
+async def enroll(
+    id: int,
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_db),
+) -> None:
+    """Enroll current user in a course. Requires authentication."""
+    try:
+        await enroll_course_service(id, current_user, session)
+    except CourseNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_detail(CourseErrorCode.course_not_found, "Course not found."),
+        )
+    except AlreadyEnrolledError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=error_detail(CourseErrorCode.already_enrolled, "Already enrolled in this course."),
+        )
+
+
+@router.delete("/{id}/enroll", status_code=status.HTTP_204_NO_CONTENT, name=RouteName.courses_unenroll)
+async def unenroll(
+    id: int,
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_db),
+) -> None:
+    """Unenroll current user from a course. Requires authentication."""
+    try:
+        await unenroll_course_service(id, current_user, session)
+    except CourseNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_detail(CourseErrorCode.course_not_found, "Course not found."),
+        )
+    except NotEnrolledError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=error_detail(CourseErrorCode.not_enrolled, "Not enrolled in this course."),
         )

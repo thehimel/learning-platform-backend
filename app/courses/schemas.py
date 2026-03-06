@@ -14,7 +14,7 @@ class CourseInstructorRead(BaseModel):
     email: str
     is_primary: bool = False
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, frozen=True)
 
     @model_validator(mode="before")
     @classmethod
@@ -73,10 +73,10 @@ class CourseRead(BaseModel):
     rating: float | None = None
     created_at: datetime
     updated_at: datetime
-    instructors: list[CourseInstructorRead] = []
+    instructors: list[CourseInstructorRead] = Field(default_factory=list)
     enrolled_count: int = 0
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, frozen=True)
 
     @model_validator(mode="before")
     @classmethod
