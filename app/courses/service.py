@@ -2,18 +2,38 @@ from uuid import UUID
 
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.courses.exceptions import InvalidInstructorIdsError
 from app.courses.models import Course, CourseInstructor
-from app.courses.schemas import CourseCreate, CourseInstructorRead, CourseRead
+from app.courses.schemas import CourseCreate
 from app.users.models import User, UserRole
+
+
+def _course_load_options():
+    """Eager load options for Course → instructors → user, enrollments."""
+    return (
+        selectinload(Course.instructors).selectinload(CourseInstructor.user),
+        selectinload(Course.enrollments),
+    )
+
+
+async def list_courses(session: AsyncSession) -> list[Course]:
+    """List all courses with instructors and enrolled count. Returns ORM objects; CourseRead auto-transforms."""
+    stmt = (
+        select(Course)
+        .options(*_course_load_options())
+        .order_by(Course.created_at.desc(), Course.id.desc())
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().unique().all())
 
 
 async def create_course(
     payload: CourseCreate,
     current_user: User,
     session: AsyncSession,
-) -> CourseRead:
+) -> Course:
     """
     Create a course with one or more instructors.
 
@@ -43,24 +63,11 @@ async def create_course(
     ]
     session.add_all(course_instructors)
     await session.commit()
-    await session.refresh(course)
 
-    instructor_reads = [
-        CourseInstructorRead(id=instructor.id, email=instructor.email, is_primary=(index == 0))
-        for index, instructor in enumerate(instructors)
-    ]
-
-    return CourseRead(
-        id=course.id,
-        title=course.title,
-        description=course.description,
-        published=course.published,
-        rating=float(course.rating) if course.rating is not None else None,
-        created_at=course.created_at,
-        updated_at=course.updated_at,
-        instructors=instructor_reads,
-        enrolled_count=0,
-    )
+    # Re-fetch with relationships for auto-transform via CourseRead
+    stmt = select(Course).where(Course.id == course.id).options(*_course_load_options())
+    result = await session.execute(stmt)
+    return result.scalars().one()
 
 
 def _resolve_instructor_ids(payload: CourseCreate, current_user_id: UUID) -> list[UUID]:

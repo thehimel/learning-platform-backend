@@ -52,8 +52,8 @@ class TestCreateCourseService:
         assert result.title == "Service Test Course"
         assert result.description == "Testing the service"
         assert len(result.instructors) == 1
-        assert result.instructors[0].id == test_instructor.id
-        assert result.instructors[0].email == test_instructor.email
+        assert result.instructors[0].user.id == test_instructor.id
+        assert result.instructors[0].user.email == test_instructor.email
         assert result.instructors[0].is_primary is True
 
     @pytest.mark.asyncio
@@ -73,9 +73,9 @@ class TestCreateCourseService:
         result = await create_course(payload, test_instructor, db_session)
 
         assert len(result.instructors) == 2
-        assert result.instructors[0].id == test_instructor.id
+        assert result.instructors[0].user.id == test_instructor.id
         assert result.instructors[0].is_primary is True
-        assert result.instructors[1].id == second_instructor.id
+        assert result.instructors[1].user.id == second_instructor.id
         assert result.instructors[1].is_primary is False
 
     @pytest.mark.asyncio

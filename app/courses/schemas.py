@@ -16,6 +16,14 @@ class CourseInstructorRead(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+    @model_validator(mode="before")
+    @classmethod
+    def from_course_instructor(cls, data: object) -> object:
+        """Auto-transform from CourseInstructor ORM (with user loaded)."""
+        if hasattr(data, "user") and hasattr(data, "is_primary"):
+            return {"id": data.user.id, "email": data.user.email, "is_primary": data.is_primary}
+        return data
+
 
 class CourseCreate(BaseModel):
     """Schema for creating a course."""
@@ -69,3 +77,25 @@ class CourseRead(BaseModel):
     enrolled_count: int = 0
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def from_course(cls, data: object) -> object:
+        """Auto-transform from Course ORM (with instructors and enrollments loaded)."""
+        if hasattr(data, "instructors") and hasattr(data, "enrollments"):
+            sorted_instructors = sorted(
+                data.instructors,
+                key=lambda x: (not x.is_primary, x.id),
+            )
+            return {
+                "id": data.id,
+                "title": data.title,
+                "description": data.description,
+                "published": data.published,
+                "rating": float(data.rating) if data.rating is not None else None,
+                "created_at": data.created_at,
+                "updated_at": data.updated_at,
+                "instructors": sorted_instructors,
+                "enrolled_count": len(data.enrollments),
+            }
+        return data

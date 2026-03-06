@@ -127,6 +127,7 @@ def routes():
         users_by_id=users_by_id,
         users_update_by_id=users_update_by_id,
         users_delete_by_id=users_delete_by_id,
+        courses_get=app.url_path_for(CourseRouteName.courses_get),
         courses_create=app.url_path_for(CourseRouteName.courses_create),
         auth_register=app.url_path_for(AuthRouteName.auth_register),
         auth_login=app.url_path_for(AuthRouteName.auth_login),
@@ -263,7 +264,7 @@ async def client_admin(db_session, test_admin):
 @pytest.fixture
 async def client(db_session, test_instructor):
     """
-    Async HTTP client with overridden get_db and current_instructor.
+    Async HTTP client with overridden get_db, current_active_user, and current_instructor.
 
     Uses httpx.AsyncClient so the request runs in the same event loop as fixtures,
     avoiding "attached to a different loop" errors with the async DB session.
@@ -272,10 +273,14 @@ async def client(db_session, test_instructor):
     async def override_get_db():
         yield db_session
 
+    async def override_current_active_user():
+        return test_instructor
+
     async def override_current_instructor():
         return test_instructor
 
     app.dependency_overrides[get_db] = override_get_db  # type: ignore[attr-defined]
+    app.dependency_overrides[current_active_user] = override_current_active_user  # type: ignore[attr-defined]
     app.dependency_overrides[current_instructor] = override_current_instructor  # type: ignore[attr-defined]
 
     async with httpx.AsyncClient(

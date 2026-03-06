@@ -7,12 +7,19 @@ from app.courses.routes import RouteName
 from app.courses.error_codes import CourseErrorCode
 from app.courses.exceptions import InvalidInstructorIdsError
 from app.exceptions import error_detail
+from app.courses.models import Course
 from app.courses.schemas import CourseCreate, CourseRead
-from app.courses.service import create_course as create_course_service
+from app.courses.service import create_course as create_course_service, list_courses as list_courses_service
 from app.database import get_db
 from app.users.models import User
 
 router = APIRouter()
+
+
+@router.get("/", response_model=list[CourseRead], name=RouteName.courses_get)
+async def list_courses(session: AsyncSession = Depends(get_db)) -> list[Course]:
+    """List all courses. Public endpoint."""
+    return await list_courses_service(session)
 
 
 @router.post("/", response_model=CourseRead, status_code=status.HTTP_201_CREATED, name=RouteName.courses_create)
@@ -22,7 +29,7 @@ async def create_course(
     response: Response,
     current_user: User = Depends(current_instructor),
     session: AsyncSession = Depends(get_db),
-) -> CourseRead:
+) -> Course:
     """
     Create a course with one or more instructors.
 
@@ -31,12 +38,12 @@ async def create_course(
     be valid users with role instructor or admin.
     """
     try:
-        course_read = await create_course_service(payload, current_user, session)
+        course = await create_course_service(payload, current_user, session)
 
         base_path = request.url.path.rstrip("/")
-        response.headers["Location"] = f"{base_path}/{course_read.id}"
+        response.headers["Location"] = f"{base_path}/{course.id}"
 
-        return course_read
+        return course
 
     except InvalidInstructorIdsError as e:
         raise HTTPException(
