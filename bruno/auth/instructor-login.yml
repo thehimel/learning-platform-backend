@@ -1,0 +1,22 @@
+info:
+  name: instructor-login
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{auth}}/jwt/login"
+  body:
+    type: form-urlencoded
+    data:
+      - name: username
+        value: "{{instructor_username}}"
+      - name: password
+        value: "{{instructor_password}}"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

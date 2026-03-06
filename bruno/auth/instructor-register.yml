@@ -1,0 +1,22 @@
+info:
+  name: instructor-register
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{auth}}/register"
+  body:
+    type: json
+    data: |-
+      {
+        "email": "{{instructor_username}}",
+        "password": "{{instructor_password}}"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

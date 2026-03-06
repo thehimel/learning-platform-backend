@@ -22,3 +22,11 @@ variables:
     name: access_token
   - secret: true
     name: user_id
+  - secret: true
+    name: instructor_username
+  - secret: true
+    name: instructor_password
+  - name: courses
+    value: "{{host}}/api/courses"
+  - secret: true
+    name: instructor_access_token

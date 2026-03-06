@@ -1,0 +1,28 @@
+info:
+  name: course-create
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{courses}}"
+  body:
+    type: json
+    data: |-
+      {
+        "title": "string",
+        "description": "string",
+        "add_me_as_instructor": true,
+        "instructor_ids": [
+          "2ea85863-9ec2-491e-a28b-383e410fb40a"
+        ]
+      }
+  auth:
+    type: bearer
+    token: "{{instructor_access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
