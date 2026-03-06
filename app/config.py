@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     postgres_host: str = "localhost"
     postgres_port: str = "5432"
     postgres_db: str = "learning-platform"
+    postgres_ssl_require: bool = False  # Set true for Neon and other cloud Postgres
     postgres_db_test: str | None = None  # If unset, uses {postgres_db}_test
     sql_echo: bool = False
 

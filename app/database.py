@@ -1,3 +1,4 @@
+import ssl
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -10,10 +11,15 @@ DATABASE_URL = (
     f"@{settings.postgres_host}:{settings.postgres_port}/{settings.postgres_db}"
 )
 
+_connect_args: dict = {}
+if settings.postgres_ssl_require:
+    _connect_args["ssl"] = ssl.create_default_context()
+
 Base = declarative_base()
 
 engine = create_async_engine(
     DATABASE_URL,
+    connect_args=_connect_args if _connect_args else {},
     pool_pre_ping=True,
     echo=settings.sql_echo,
 )
