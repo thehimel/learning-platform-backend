@@ -1,0 +1,20 @@
+info:
+  name: course-unenroll
+  type: http
+  seq: 4
+
+http:
+  method: DELETE
+  url: "{{courses}}/1/enroll"
+  body:
+    type: json
+    data: ""
+  auth:
+    type: bearer
+    token: "{{student_access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

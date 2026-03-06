@@ -1,0 +1,20 @@
+info:
+  name: course-enroll
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{courses}}/1/enroll"
+  body:
+    type: json
+    data: ""
+  auth:
+    type: bearer
+    token: "{{student_access_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
