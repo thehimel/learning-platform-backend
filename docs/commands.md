@@ -6,16 +6,26 @@
 uvicorn app.main:app --reload
 ```
 
+### Health check
+
+```shell
+# Verify API is running
+curl http://localhost:8000/
+
+# Verify database connectivity
+curl http://localhost:8000/health/db
+```
+
 ## Docker
 
 ### Build and Run (standalone)
 
 ```shell
 # Build the image with a custom tag
-docker build -t my-python-app .
+docker build -t learning-platform-api .
 
 # Run the container (interactive, remove on exit)
-docker run -it --rm --name running-my-python-app my-python-app
+docker run -it --rm --name learning-platform-api learning-platform-api
 ```
 
 ### Run a Single Python Script
@@ -165,9 +175,7 @@ ruff format app/
 
 ## Pytest
 
-Run from the project root. See [Testing](steps/09-testing.md) and [Tests Setup](steps/config/tests.md) for the full guide.
-
-**Prerequisite:** Create the test database (e.g. `learning-platform_test`) before running tests. See [Tests Setup](steps/config/tests.md#prerequisites).
+Run from the project root. The test database (`{POSTGRES_DB}_test`, or `POSTGRES_DB_TEST` if set) is **auto-created** before tests and migrations are run automatically. No manual setup required.
 
 ```shell
 # Run all tests (minimal output)
@@ -181,6 +189,12 @@ pytest -v -s
 
 # Stop on first failure (useful when debugging)
 pytest -x
+
+# Drop the test database after the run (clean teardown)
+pytest --drop-test-db
+
+# Show create/teardown log messages
+pytest --log-cli-level=INFO
 
 # Suppress warning messages
 pytest --disable-warnings
@@ -212,18 +226,6 @@ openssl rand -hex 32
 ## Install Dependencies
 
 ```shell
-# Install FastAPI with all optional dependencies; Note quotes to avoid shell issues with brackets
-pip install "fastapi[all]"
-
-# Install bcrypt for password hashing
-pip install bcrypt
-
-# Install cryptography for JWT signing
-pip install python-jose[cryptography]
-
-# Install async PostgreSQL driver
-pip install asyncpg
-
-# Install SQLAlchemy with async support (includes greenlet)
-pip install "sqlalchemy[asyncio]"
+# Install all project dependencies
+pip install -r requirements.txt
 ```

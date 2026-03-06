@@ -71,3 +71,5 @@ Align naming across modules (e.g. `UserRead`, `CourseRead`).
 
 - Domain tests live in `app/<domain>/tests/` (e.g. `app/courses/tests/`)
 - Shared fixtures in project root `conftest.py`
+- Use the `routes` fixture from `conftest` — it provides paths via `app.url_path_for(RouteName.*)` so tests stay in sync with the app (e.g. `routes.users_me`, `routes.users_by_id(user_id)`, `routes.courses_create`) — never hardcode URLs
+- Route names live in each domain’s `routes.py` (e.g. `app.users.routes.RouteName`, `app.courses.routes.RouteName`) — routers and tests use these enums

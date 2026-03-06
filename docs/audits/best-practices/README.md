@@ -66,7 +66,7 @@ Candidates to add to `docs/conventions.md` or adopt as project standards.
 | Practice | Status | Notes |
 |----------|--------|-------|
 | **Migrations** | ✓ | Alembic |
-| **Test DB** | Consider | Separate `*_test` DB or `.env.test` for CI |
+| **Test DB** | ✓ | Separate `{postgres_db}_test` DB; auto-create and migrate before pytest |
 | **Connection pool** | ✓ | SQLAlchemy configured |
 
 ---
