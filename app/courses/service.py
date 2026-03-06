@@ -115,7 +115,7 @@ async def _course_exists(session: AsyncSession, course_id: int) -> bool:
     return result.scalar_one()
 
 
-async def enroll_course(course_id: int, current_user: User, session: AsyncSession) -> None:
+async def enroll_course(course_id: int, current_user: User, session: AsyncSession) -> CourseEnrollment:
     """
     Enroll current user in a course.
 
@@ -130,10 +130,12 @@ async def enroll_course(course_id: int, current_user: User, session: AsyncSessio
     session.add(enrollment)
     try:
         await session.commit()
+        await session.refresh(enrollment)
     except IntegrityError:
         await session.rollback()
         # Unique (course_id, user_id) — already enrolled; course existence already verified
         raise AlreadyEnrolledError from None
+    return enrollment
 
 
 async def unenroll_course(course_id: int, current_user: User, session: AsyncSession) -> None:

@@ -25,6 +25,17 @@ class CourseInstructorRead(BaseModel):
         return data
 
 
+class EnrollmentRead(BaseModel):
+    """Schema for enrollment resource (created on enroll)."""
+
+    id: int
+    course_id: int
+    user_id: uuid.UUID
+    enrolled_at: datetime
+
+    model_config = ConfigDict(from_attributes=True, frozen=True)
+
+
 class CourseRate(BaseModel):
     """Schema for rating a course (1–5, one decimal)."""
 

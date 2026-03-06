@@ -12,8 +12,8 @@ from app.courses.exceptions import (
     NotEnrolledError,
 )
 from app.exceptions import error_detail
-from app.courses.models import Course
-from app.courses.schemas import CourseCreate, CourseRead, CourseRate
+from app.courses.models import Course, CourseEnrollment
+from app.courses.schemas import CourseCreate, CourseRead, CourseRate, EnrollmentRead
 from app.courses.service import (
     create_course as create_course_service,
     enroll_course as enroll_course_service,
@@ -67,15 +67,20 @@ async def create_course(
         )
 
 
-@router.post("/{id}/enroll", status_code=status.HTTP_204_NO_CONTENT, name=RouteName.courses_enroll)
+@router.post("/{id}/enroll", response_model=EnrollmentRead, status_code=status.HTTP_201_CREATED, name=RouteName.courses_enroll)
 async def enroll(
     id: int,
+    request: Request,
+    response: Response,
     current_user: User = Depends(current_active_user),
     session: AsyncSession = Depends(get_db),
-) -> None:
-    """Enroll current user in a course. Requires authentication."""
+) -> CourseEnrollment:
+    """Enroll current user in a course. Returns 201 with full enrollment resource."""
     try:
-        await enroll_course_service(id, current_user, session)
+        enrollment = await enroll_course_service(id, current_user, session)
+        base_path = request.url.path.removesuffix("/enroll").rstrip("/")
+        response.headers["Location"] = f"{base_path}/enrollments/{enrollment.id}"
+        return enrollment
     except CourseNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

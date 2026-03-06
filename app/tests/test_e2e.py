@@ -158,7 +158,8 @@ class TestE2EInstructorFlow:
             routes.courses_enroll(course_id),
             headers=_auth_headers(student_token),
         )
-        assert enroll_resp.status_code == 204
+        assert enroll_resp.status_code == 201
+        assert enroll_resp.json()["course_id"] == course_id
 
         # Verify enrolled_count
         list_resp = await client_e2e.get(routes.courses_get)

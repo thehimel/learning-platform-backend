@@ -7,8 +7,8 @@ class TestEnrollAPI:
     """Tests for enroll and unenroll endpoints."""
 
     @pytest.mark.asyncio
-    async def test_enroll_returns_204(self, client, routes):
-        """Student can enroll in a course."""
+    async def test_enroll_returns_201_with_enrollment(self, client, routes):
+        """Enroll returns 201 with full enrollment resource."""
         create_resp = await client.post(
             routes.courses_create,
             json={"title": "Enroll Test", "add_me_as_instructor": True, "instructor_ids": []},
@@ -18,7 +18,13 @@ class TestEnrollAPI:
 
         response = await client.post(routes.courses_enroll(course_id))
 
-        assert response.status_code == 204
+        assert response.status_code == 201
+        data = response.json()
+        assert "id" in data
+        assert data["course_id"] == course_id
+        assert "user_id" in data
+        assert "enrolled_at" in data
+        assert "Location" in response.headers
 
         # Verify enrolled_count increased
         list_resp = await client.get(routes.courses_get)
