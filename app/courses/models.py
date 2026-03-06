@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, CheckConstraint, Column, ForeignKey, Integer, Numeric, String, UniqueConstraint, func, select
+from sqlalchemy import Boolean, CheckConstraint, Column, ForeignKey, Index, Integer, Numeric, String, UniqueConstraint, func, select
 from sqlalchemy.orm import column_property, relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
@@ -20,6 +20,13 @@ class Course(Base):
 
     __table_args__ = (
         CheckConstraint("rating IS NULL OR (rating >= 1 AND rating <= 5)", name="ck_courses_rating_range"),
+        Index(
+            "ix_courses_published_created_at_id",
+            "created_at",
+            "id",
+            postgresql_where=text("published = true"),
+            postgresql_ops={"created_at": "DESC", "id": "DESC"},
+        ),
     )
 
     instructors = relationship(
