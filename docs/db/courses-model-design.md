@@ -1,6 +1,6 @@
 # Courses Model Design — Specification
 
-Courses support one or many instructors per course (Udemy-style). This document defines the specification only; no implementation code.
+Courses support one or many instructors per course. This document defines the specification only; no implementation code.
 
 ---
 
