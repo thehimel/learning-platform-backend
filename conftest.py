@@ -144,21 +144,27 @@ def _get_test_db_url() -> str:
     )
 
 
+@pytest.fixture(scope="session")
+def test_engine():
+    """Session-scoped engine — reused across tests to avoid per-test engine creation."""
+    engine = create_async_engine(
+        _get_test_db_url(),
+        poolclass=NullPool,
+        echo=False,
+    )
+    yield engine
+    asyncio.run(engine.dispose())
+
+
 @pytest.fixture
-async def db_session():
+async def db_session(test_engine):
     """
     Provide an async DB session with transaction rollback for isolation.
 
     Uses a separate test DB ({postgres_db}_test) to avoid affecting development data.
     NullPool + join_transaction_mode='create_savepoint' so app commits are rolled back.
     """
-    engine = create_async_engine(
-        _get_test_db_url(),
-        poolclass=NullPool,
-        echo=False,
-    )
-
-    async with engine.connect() as connection:
+    async with test_engine.connect() as connection:
         transaction = await connection.begin()
 
         async with AsyncSession(
@@ -170,8 +176,6 @@ async def db_session():
             yield session
 
         await transaction.rollback()
-
-    await engine.dispose()
 
 
 @pytest.fixture

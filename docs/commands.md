@@ -203,6 +203,23 @@ pytest --disable-warnings
 pytest --help
 ```
 
+### Faster runs
+
+```shell
+# Quiet mode (less output, slightly faster)
+pytest -q
+
+# Show 10 slowest tests (helps find bottlenecks)
+pytest --durations=10
+
+# Parallel execution across CPU cores (pytest-xdist)
+# May be faster on large suites; can be slower on small suites due to worker overhead
+pytest -n auto
+
+# Combine: quiet + parallel
+pytest -q -n auto
+```
+
 ## Pre-commit
 
 ```shell

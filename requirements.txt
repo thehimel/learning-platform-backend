@@ -6,6 +6,7 @@ pre-commit
 pydantic-settings
 pytest
 pytest-asyncio
+pytest-xdist
 python-jose[cryptography]
 asyncpg
 fastapi-users[sqlalchemy]
