@@ -25,7 +25,6 @@ class TestRateAPI:
         assert "user_id" in data
         assert data["rating"] == 4.5
         assert "created_at" in data
-        assert "/ratings/" in response.headers.get("location", "")
 
         list_resp = await client.get(routes.courses_get)
         course = next(c for c in list_resp.json() if c["id"] == course_id)

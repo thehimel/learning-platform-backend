@@ -24,7 +24,6 @@ class TestEnrollAPI:
         assert data["course_id"] == course_id
         assert "user_id" in data
         assert "enrolled_at" in data
-        assert "Location" in response.headers
 
         # Verify enrolled_count increased
         list_resp = await client.get(routes.courses_get)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,8 +36,6 @@ async def list_courses(session: AsyncSession = Depends(get_db)) -> list[Course]:
 @router.post("/", response_model=CourseRead, status_code=status.HTTP_201_CREATED, name=RouteName.courses_create)
 async def create_course(
     payload: CourseCreate,
-    request: Request,
-    response: Response,
     current_user: User = Depends(current_instructor),
     session: AsyncSession = Depends(get_db),
 ) -> Course:
@@ -49,12 +47,7 @@ async def create_course(
     be valid users with role instructor or admin.
     """
     try:
-        course = await create_course_service(payload, current_user, session)
-
-        base_path = request.url.path.rstrip("/")
-        response.headers["Location"] = f"{base_path}/{course.id}"
-
-        return course
+        return await create_course_service(payload, current_user, session)
 
     except InvalidInstructorIdsError as e:
         raise HTTPException(
@@ -70,17 +63,12 @@ async def create_course(
 @router.post("/{id}/enroll", response_model=EnrollmentRead, status_code=status.HTTP_201_CREATED, name=RouteName.courses_enroll)
 async def enroll(
     id: int,
-    request: Request,
-    response: Response,
     current_user: User = Depends(current_active_user),
     session: AsyncSession = Depends(get_db),
 ) -> CourseEnrollment:
     """Enroll current user in a course. Returns 201 with full enrollment resource."""
     try:
-        enrollment = await enroll_course_service(id, current_user, session)
-        base_path = request.url.path.removesuffix("/enroll").rstrip("/")
-        response.headers["Location"] = f"{base_path}/enrollments/{enrollment.id}"
-        return enrollment
+        return await enroll_course_service(id, current_user, session)
     except CourseNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -118,17 +106,12 @@ async def unenroll(
 async def rate(
     id: int,
     payload: CourseRate,
-    request: Request,
-    response: Response,
     current_user: User = Depends(current_active_user),
     session: AsyncSession = Depends(get_db),
 ) -> CourseRating:
     """Rate a course (1–5). Upserts if user already rated. Returns 201 with full rating resource."""
     try:
-        rating = await rate_course_service(id, payload, current_user, session)
-        base_path = request.url.path.removesuffix("/rate").rstrip("/")
-        response.headers["Location"] = f"{base_path}/ratings/{rating.id}"
-        return rating
+        return await rate_course_service(id, payload, current_user, session)
     except CourseNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

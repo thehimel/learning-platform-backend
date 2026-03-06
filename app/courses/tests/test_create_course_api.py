@@ -13,7 +13,7 @@ class TestCreateCourseAPI:
         test_instructor,
         routes,
     ):
-        """Creating a course with add_me_as_instructor=true returns 201 and Location header."""
+        """Creating a course with add_me_as_instructor=true returns 201 with full course resource."""
         payload = {
             "title": "Introduction to Python",
             "description": "Learn Python basics",
@@ -34,10 +34,6 @@ class TestCreateCourseAPI:
         assert data["instructors"][0]["id"] == str(test_instructor.id)
         assert data["instructors"][0]["email"] == test_instructor.email
         assert data["instructors"][0]["is_primary"] is True
-
-        assert "Location" in response.headers
-        assert str(data["id"]) in response.headers["Location"]
-        assert response.headers["Location"].endswith(f"/{data['id']}")
 
     @pytest.mark.asyncio
     async def test_create_course_without_self_adds_only_provided_instructors(
