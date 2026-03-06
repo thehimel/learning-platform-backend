@@ -1,0 +1,32 @@
+name: production
+variables:
+  - secret: true
+    name: host
+  - name: auth
+    value: "{{host}}/api/auth"
+  - secret: true
+    name: student_username
+  - secret: true
+    name: student_password
+  - secret: true
+    name: student_access_token
+  - name: users
+    value: "{{host}}/api/users"
+  - secret: true
+    name: admin_username
+  - secret: true
+    name: admin_password
+  - secret: true
+    name: admin_access_token
+  - secret: true
+    name: access_token
+  - secret: true
+    name: user_id
+  - secret: true
+    name: instructor_username
+  - secret: true
+    name: instructor_password
+  - name: courses
+    value: "{{host}}/api/courses"
+  - secret: true
+    name: instructor_access_token
