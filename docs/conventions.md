@@ -53,6 +53,7 @@ Align naming across modules (e.g. `UserRead`, `CourseRead`).
 
 - Use limit/offset pagination; return `items`, `total`, `limit`, `offset` in the response
 - Default limit (e.g. 20), max limit (e.g. 100) as query params
+- Optional filters as query params (e.g. `published`, `q` for title search); apply filters in the service layer
 
 ## Authentication
 
@@ -75,6 +76,7 @@ Align naming across modules (e.g. `UserRead`, `CourseRead`).
 - Import all models in `alembic/env.py` so autogenerate detects schema changes
 - Use `column_property` with correlated subquery for computed counts (e.g. `enrolled_count`) instead of loading related rows
 - Use bulk insert (e.g. `insert(Model).values([...])`) when replacing related records; fetch in same transaction before commit to avoid re-fetch
+- Add partial indexes for list endpoints that commonly filter by a condition (e.g. `WHERE published = true` for `get_courses`); use `postgresql_where` and `postgresql_ops` for ordering columns
 
 ## Error Handling
 
@@ -99,6 +101,7 @@ Keep all imports at module top; avoid imports inside functions or methods.
 - `slowapi` with `SlowAPIMiddleware`; central `Limiter` in `app.limiter.py`
 - Default `60/minute` per client IP; configurable via `RATE_LIMIT_ENABLED` (disabled in tests)
 - Rate limit exceeded returns `429` with structured `detail`; handler registered on the app
+- Per-route limits (e.g. stricter for create/enroll) are optional; use `@limiter.limit()` when needed
 
 ## Security
 
@@ -110,6 +113,7 @@ Keep all imports at module top; avoid imports inside functions or methods.
 
 - Use existence checks (e.g. `exists()`) instead of loading full resources when only checking permission
 - Use `BackgroundTasks` for expensive operations that don't need to block the response (e.g. aggregate recompute)
+- For update flows that replace related records, use delete + bulk insert; fetch the updated resource in the same transaction before commit to avoid a separate re-fetch
 
 ## API Documentation
 

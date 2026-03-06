@@ -201,10 +201,13 @@ Ordered by type: Unit → Integration → E2E → Security → Smoke → Sanity 
 | [app/courses/tests/test_service_unit.py](../../app/courses/tests/test_service_unit.py) | Unit |
 | [app/courses/tests/test_schemas.py](../../app/courses/tests/test_schemas.py) | Unit |
 | [app/courses/tests/test_get_courses_api.py](../../app/courses/tests/test_get_courses_api.py) | Integration |
+| [app/courses/tests/test_get_courses_service.py](../../app/courses/tests/test_get_courses_service.py) | Integration (service + DB) |
 | [app/courses/tests/test_create_course_api.py](../../app/courses/tests/test_create_course_api.py) | Integration |
+| [app/courses/tests/test_create_course_service.py](../../app/courses/tests/test_create_course_service.py) | Integration (service + DB) |
+| [app/courses/tests/test_delete_course_service.py](../../app/courses/tests/test_delete_course_service.py) | Integration (service + DB) |
 | [app/users/tests/test_users_admin_api.py](../../app/users/tests/test_users_admin_api.py) | Integration |
 | [app/users/tests/test_users_me_api.py](../../app/users/tests/test_users_me_api.py) | Integration |
-| [app/courses/tests/test_create_course_service.py](../../app/courses/tests/test_create_course_service.py) | Integration (service + DB) |
 | [app/tests/test_e2e.py](../../app/tests/test_e2e.py) | E2E |
 | [app/tests/helpers.py](../../app/tests/helpers.py) | Shared E2E helpers |
 | [app/tests/test_security.py](../../app/tests/test_security.py) | Security |
+| [app/tests/test_smoke.py](../../app/tests/test_smoke.py) | Smoke |

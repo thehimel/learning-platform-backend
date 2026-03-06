@@ -20,7 +20,7 @@ Optimization suggestions for the features implemented in commit `fa25c42` (cours
 | 10 | Mass assignment (no sensitive fields in schema) | Low | Low | Security | ✅ Done |
 | 11 | Audit logging for course updates | Medium | Medium | Security/compliance | Pending |
 | 12 | Per-route rate limits | Low | Low | Abuse prevention | Pending |
-| 13 | Indexes (verify common access patterns) | Medium | Low | Performance | Pending |
+| 13 | Indexes (verify common access patterns) | Medium | Low | Performance | ✅ Done |
 
 ---
 
@@ -104,7 +104,7 @@ async def get_course(id: int, session: AsyncSession) -> Course:
 
 ## Performance
 
-### 4. `get_courses` — No Pagination ✅ Implemented
+### 4. `get_courses` — Pagination ✅ Implemented
 
 **Previous:** Loads all courses into memory. Will not scale with large datasets.
 
@@ -392,22 +392,23 @@ limiter = Limiter(
 
 ## Database
 
-### 13. Indexes
+### 13. Indexes ✅ Implemented
 
-Verify indexes for common access patterns:
-
-**Current (from migrations):**
+**Implemented:** Partial index on `courses` for `get_courses` ordering when filtering published only (common case for unauthenticated and many authenticated requests):
 
 ```python
-# course_instructors
-op.create_index('ix_course_instructors_course_id', 'course_instructors', ['course_id'])
-op.create_index('ix_course_instructors_user_id', 'course_instructors', ['user_id'])
-# UniqueConstraint('course_id', 'user_id', name='uq_course_instructor')
-
-# course_enrollments
-op.create_index('ix_course_enrollments_course_id', 'course_enrollments', ['course_id'])
-op.create_index('ix_course_enrollments_user_id', 'course_enrollments', ['user_id'])
+# app/courses/models.py
+Index(
+    "ix_courses_published_created_at_id",
+    "created_at",
+    "id",
+    postgresql_where=text("published = true"),
+    postgresql_ops={"created_at": "DESC", "id": "DESC"},
+),
 ```
 
-**Verify:** `courses.created_at` (for `get_courses` ordering); composite `(course_id, user_id)` for permission checks; `course_enrollments(course_id)` for counts.
+**Existing indexes (from initial migration):**
 
+- `course_instructors`: `ix_course_instructors_course_id`, `ix_course_instructors_user_id`, `uq_course_instructor`
+- `course_enrollments`: `ix_course_enrollments_course_id`, `ix_course_enrollments_user_id`, `uq_course_enrollment`
+- `course_ratings`: indexes on `course_id`, `user_id`; `uq_course_rating` for upsert
