@@ -1,9 +1,12 @@
 from uuid import UUID
 
-from sqlalchemy import delete, exists, or_, select
+from decimal import Decimal
+
+from sqlalchemy import delete, exists, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy.dialects.postgresql import insert
 
 from app.courses.exceptions import (
     AlreadyEnrolledError,
@@ -11,8 +14,8 @@ from app.courses.exceptions import (
     InvalidInstructorIdsError,
     NotEnrolledError,
 )
-from app.courses.models import Course, CourseEnrollment, CourseInstructor
-from app.courses.schemas import CourseCreate
+from app.courses.models import Course, CourseEnrollment, CourseInstructor, CourseRating
+from app.courses.schemas import CourseCreate, CourseRate
 from app.users.models import User, UserRole
 
 # Eager load options for Course → instructors → user, enrollments. Reused to avoid N+1.
@@ -151,4 +154,40 @@ async def unenroll_course(course_id: int, current_user: User, session: AsyncSess
     result = await session.execute(stmt)
     if result.rowcount == 0:
         raise NotEnrolledError()
+    await session.commit()
+
+
+async def rate_course(
+    course_id: int,
+    payload: CourseRate,
+    current_user: User,
+    session: AsyncSession,
+) -> None:
+    """
+    Rate a course (upsert). One rating per user per course; updates if already rated.
+
+    Raises:
+        CourseNotFoundError: if course does not exist
+    """
+    if not await _course_exists(session, course_id):
+        raise CourseNotFoundError()
+
+    rating_value = Decimal(str(round(payload.rating, 1)))
+    stmt = (
+        insert(CourseRating)
+        .values(course_id=course_id, user_id=current_user.id, rating=rating_value)
+        .on_conflict_do_update(
+            constraint="uq_course_rating",
+            set_={"rating": rating_value},
+        )
+    )
+    await session.execute(stmt)
+
+    # Recompute course aggregate rating
+    avg_stmt = select(func.avg(CourseRating.rating)).where(CourseRating.course_id == course_id)
+    result = await session.execute(avg_stmt)
+    avg_rating = result.scalars().one_or_none()
+    await session.execute(
+        update(Course).where(Course.id == course_id).values(rating=avg_rating)
+    )
     await session.commit()

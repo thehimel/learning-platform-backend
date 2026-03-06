@@ -30,8 +30,9 @@ class TestUnauthenticatedAccess:
             ("post", "courses_create", {"title": "Course", "add_me_as_instructor": True, "instructor_ids": []}),
             ("post", "courses_enroll", None),
             ("delete", "courses_unenroll", None),
+            ("post", "courses_rate", {"rating": 4.5}),
         ],
-        ids=["get_me", "patch_me", "get_user", "patch_user", "delete_user", "create_course", "enroll", "unenroll"],
+        ids=["get_me", "patch_me", "get_user", "patch_user", "delete_user", "create_course", "enroll", "unenroll", "rate"],
     )
     async def test_protected_routes_return_401_without_token(
         self, client_e2e, routes, method, route_attr, payload
@@ -40,7 +41,7 @@ class TestUnauthenticatedAccess:
         route_fn = getattr(routes, route_attr)
         if "by_id" in route_attr:
             url = route_fn(uuid.uuid4())
-        elif route_attr in ("courses_enroll", "courses_unenroll"):
+        elif route_attr in ("courses_enroll", "courses_unenroll", "courses_rate"):
             url = route_fn(1)
         else:
             url = route_fn

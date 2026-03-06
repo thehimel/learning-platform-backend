@@ -176,6 +176,43 @@ class TestE2EInstructorFlow:
         course2 = next(c for c in list_resp2.json() if c["id"] == course_id)
         assert course2["enrolled_count"] == 0
 
+    @pytest.mark.asyncio
+    async def test_student_rate_course(self, client_e2e, instructor_e2e, routes):
+        """Student rates a course, then updates rating."""
+        _, instructor_token = instructor_e2e
+        create_resp = await client_e2e.post(
+            routes.courses_create,
+            json={"title": "E2E Rate Course", "add_me_as_instructor": True, "instructor_ids": []},
+            headers=_auth_headers(instructor_token),
+        )
+        assert create_resp.status_code == 201
+        course_id = create_resp.json()["id"]
+
+        email = f"e2e-rater-{uuid.uuid4().hex[:8]}@test.example"
+        password = "SecurePass1!"
+        await client_e2e.post(routes.auth_register, json={"email": email, "password": password})
+        token = await e2e_login(client_e2e, email, password, routes.auth_login)
+
+        rate_resp = await client_e2e.post(
+            routes.courses_rate(course_id),
+            json={"rating": 4.0},
+            headers=_auth_headers(token),
+        )
+        assert rate_resp.status_code == 204
+
+        list_resp = await client_e2e.get(routes.courses_get)
+        course = next(c for c in list_resp.json() if c["id"] == course_id)
+        assert course["rating"] == 4.0
+
+        await client_e2e.post(
+            routes.courses_rate(course_id),
+            json={"rating": 5.0},
+            headers=_auth_headers(token),
+        )
+        list_resp2 = await client_e2e.get(routes.courses_get)
+        course2 = next(c for c in list_resp2.json() if c["id"] == course_id)
+        assert course2["rating"] == 5.0
+
 
 class TestE2EAdminFlow:
     """E2E: admin (created in DB) -> login -> manage users."""

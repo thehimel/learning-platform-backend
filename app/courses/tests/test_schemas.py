@@ -5,7 +5,27 @@ import uuid
 import pytest
 from pydantic import ValidationError
 
-from app.courses.schemas import CourseCreate, MAX_INSTRUCTORS_PER_COURSE
+from app.courses.schemas import CourseCreate, CourseRate, MAX_INSTRUCTORS_PER_COURSE
+
+
+class TestCourseRate:
+    """Tests for CourseRate schema validation."""
+
+    def test_valid_rating(self):
+        """Valid rating 1–5."""
+        payload = CourseRate(rating=4.5)
+        assert payload.rating == 4.5
+
+    def test_rounds_to_one_decimal(self):
+        """Rating is rounded to one decimal place."""
+        payload = CourseRate.model_validate({"rating": 4.567})
+        assert payload.rating == 4.6
+
+    @pytest.mark.parametrize("rating", [0.5, 5.5, -1, 10], ids=["below_min", "above_max", "negative", "too_high"])
+    def test_invalid_rating_raises(self, rating):
+        """Rating outside 1–5 raises ValidationError."""
+        with pytest.raises(ValidationError):
+            CourseRate(rating=rating)
 
 
 class TestCourseCreate:

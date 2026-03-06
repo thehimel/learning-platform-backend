@@ -13,11 +13,12 @@ from app.courses.exceptions import (
 )
 from app.exceptions import error_detail
 from app.courses.models import Course
-from app.courses.schemas import CourseCreate, CourseRead
+from app.courses.schemas import CourseCreate, CourseRead, CourseRate
 from app.courses.service import (
     create_course as create_course_service,
     enroll_course as enroll_course_service,
     list_courses as list_courses_service,
+    rate_course as rate_course_service,
     unenroll_course as unenroll_course_service,
 )
 from app.database import get_db
@@ -105,4 +106,21 @@ async def unenroll(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=error_detail(CourseErrorCode.not_enrolled, "Not enrolled in this course."),
+        )
+
+
+@router.post("/{id}/rate", status_code=status.HTTP_204_NO_CONTENT, name=RouteName.courses_rate)
+async def rate(
+    id: int,
+    payload: CourseRate,
+    current_user: User = Depends(current_active_user),
+    session: AsyncSession = Depends(get_db),
+) -> None:
+    """Rate a course (1–5). Upserts if user already rated. Requires authentication."""
+    try:
+        await rate_course_service(id, payload, current_user, session)
+    except CourseNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_detail(CourseErrorCode.course_not_found, "Course not found."),
         )

@@ -8,3 +8,4 @@ class RouteName(StrEnum):
     courses_create = "courses_create"
     courses_enroll = "courses_enroll"
     courses_unenroll = "courses_unenroll"
+    courses_rate = "courses_rate"

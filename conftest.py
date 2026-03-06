@@ -127,6 +127,9 @@ def routes():
     def courses_unenroll(course_id: int) -> str:
         return app.url_path_for(CourseRouteName.courses_unenroll, id=course_id)
 
+    def courses_rate(course_id: int) -> str:
+        return app.url_path_for(CourseRouteName.courses_rate, id=course_id)
+
     return SimpleNamespace(
         users_me=app.url_path_for(UserRouteName.users_get_me),
         users_update_me=app.url_path_for(UserRouteName.users_update_me),
@@ -137,6 +140,7 @@ def routes():
         courses_create=app.url_path_for(CourseRouteName.courses_create),
         courses_enroll=courses_enroll,
         courses_unenroll=courses_unenroll,
+        courses_rate=courses_rate,
         auth_register=app.url_path_for(AuthRouteName.auth_register),
         auth_login=app.url_path_for(AuthRouteName.auth_login),
     )

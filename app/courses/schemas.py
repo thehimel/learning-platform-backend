@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -18,11 +18,22 @@ class CourseInstructorRead(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def from_course_instructor(cls, data: object) -> object:
+    def from_course_instructor(cls, data: Any) -> Any:
         """Auto-transform from CourseInstructor ORM (with user loaded)."""
         if hasattr(data, "user") and hasattr(data, "is_primary"):
             return {"id": data.user.id, "email": data.user.email, "is_primary": data.is_primary}
         return data
+
+
+class CourseRate(BaseModel):
+    """Schema for rating a course (1–5, one decimal)."""
+
+    rating: Annotated[float, Field(ge=1, le=5, description="Rating from 1 to 5 (e.g. 2.5)")]
+
+    @model_validator(mode="after")
+    def round_to_one_decimal(self) -> "CourseRate":
+        self.rating = round(self.rating, 1)
+        return self
 
 
 class CourseCreate(BaseModel):
@@ -80,7 +91,7 @@ class CourseRead(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def from_course(cls, data: object) -> object:
+    def from_course(cls, data: Any) -> Any:
         """Auto-transform from Course ORM (with instructors and enrollments loaded)."""
         if hasattr(data, "instructors") and hasattr(data, "enrollments"):
             sorted_instructors = sorted(
