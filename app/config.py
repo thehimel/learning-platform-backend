@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # When False, rate_course recomputes rating inline (for tests); when True, uses BackgroundTasks.
     rating_recompute_async: bool = True
 
+    # When False, rate limiting is disabled (e.g. for tests).
+    rate_limit_enabled: bool = True
+
 
 try:
     settings = Settings()

@@ -17,6 +17,8 @@ from sqlalchemy.pool import NullPool
 
 # Run rate_course recompute inline in tests (avoids BackgroundTasks + pytest event loop issues)
 os.environ.setdefault("RATING_RECOMPUTE_ASYNC", "false")
+# Disable rate limiting in tests to avoid 429 when many requests hit the same IP
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 from app.auth.backend import current_active_user, current_admin, current_instructor, current_user_optional
 from app.auth.routes import RouteName as AuthRouteName
