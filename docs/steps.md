@@ -17,6 +17,7 @@ Setup guide: [sqlalchemy-alembic-async-setup.md](config/sqlalchemy-alembic-async
 - [chore: initialize Alembic](https://github.com/thehimel/learning-platform-api/commit/6ff1b67077f3091ca5949e9ef7356ae121b92b12)
 - [feat: update Alembic configuration for async database migrations](https://github.com/thehimel/learning-platform-api/commit/5f8c91ec63447be54cb2bb3a7d185879bad66f3a)
 - [feat: create courses table migration](https://github.com/thehimel/learning-platform-api/commit/d4c88a1e61cad06773db900a319da04ac72e71cb)
+- [feat: add SSL support for PostgreSQL connections and update environment configuration](https://github.com/thehimel/learning-platform-api/commit/6835f3989e39e6d1429bb6ce6fad7fbef181cf89)
 
 ## Implement Authentication and Authorization
 
