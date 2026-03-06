@@ -5,7 +5,7 @@ import uuid
 import pytest
 from pydantic import ValidationError
 
-from app.courses.schemas import CourseCreate, CourseRate, MAX_INSTRUCTORS_PER_COURSE
+from app.courses.schemas import CourseCreate, CourseRate, CourseUpdate, MAX_INSTRUCTORS_PER_COURSE
 
 
 class TestCourseRate:
@@ -90,3 +90,22 @@ class TestCourseCreate:
         if error_substring:
             errors = exc_info.value.errors()
             assert any(error_substring in str(e.get("msg", "")) for e in errors)
+
+
+class TestCourseUpdate:
+    """Tests for CourseUpdate schema validation."""
+
+    def test_valid_partial_payload(self):
+        """Valid partial payload with only title."""
+        payload = CourseUpdate.model_validate({"title": "Updated Title"})
+        assert payload.title == "Updated Title"
+        assert payload.description is None
+        assert payload.published is None
+        assert payload.instructor_ids is None
+
+    def test_extra_fields_forbidden(self):
+        """Extra fields (mass assignment) raise ValidationError."""
+        with pytest.raises(ValidationError) as exc_info:
+            CourseUpdate.model_validate({"title": "OK", "rating": 5})
+        errors = exc_info.value.errors()
+        assert any("extra" in str(e.get("type", "")).lower() for e in errors)

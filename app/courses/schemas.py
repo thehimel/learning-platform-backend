@@ -69,7 +69,15 @@ class CourseRate(BaseModel):
 
 
 class CourseUpdate(BaseModel):
-    """Schema for updating a course (partial — all fields optional)."""
+    """
+    Schema for updating a course (partial — all fields optional).
+
+    Intentionally limited to title, description, published, and instructor_ids.
+    Sensitive fields (e.g. rating, created_at, internal flags) are omitted to prevent
+    mass assignment. Clients sending extra fields receive a validation error.
+    """
+
+    model_config = ConfigDict(extra="forbid")
 
     title: Annotated[str | None, Field(default=None, min_length=1, max_length=500)] = None
     description: Annotated[str | None, Field(default=None, max_length=MAX_DESCRIPTION_LENGTH)] = None
