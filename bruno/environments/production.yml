@@ -30,3 +30,9 @@ variables:
     value: "{{host}}/api/courses"
   - secret: true
     name: instructor_access_token
+  - secret: true
+    name: admin_user_id
+  - secret: true
+    name: instructor_user_id
+  - secret: true
+    name: student_user_id

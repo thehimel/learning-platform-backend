@@ -14,12 +14,12 @@ http:
         "description": "string",
         "add_me_as_instructor": true,
         "instructor_ids": [
-          "2ea85863-9ec2-491e-a28b-383e410fb40a"
+          "{{instructor_user_id}}"
         ]
       }
   auth:
     type: bearer
-    token: "{{instructor_access_token}}"
+    token: "{{admin_access_token}}"
 
 settings:
   encodeUrl: true

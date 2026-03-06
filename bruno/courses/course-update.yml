@@ -13,7 +13,7 @@ http:
         "title": "Updated Title",
         "published": false,
         "instructor_ids": [
-          "562bbd1e-bf1f-4d37-8f79-67f6cf534d9c"
+          "{{instructor_user_id}}"
         ]
       }
   auth:
