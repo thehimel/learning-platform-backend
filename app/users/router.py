@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi_users.exceptions import UserNotExists
 
 from app.auth.backend import current_active_user, current_admin
+from app.exceptions import error_detail
+from app.users.error_codes import UserErrorCode
 from app.users.manager import UserManager, get_user_manager
 from app.users.models import User
 from app.users.schemas import UserAdminUpdate, UserRead, UserUpdate
@@ -36,7 +38,10 @@ async def get_user(
     try:
         return await user_manager.get(id)
     except UserNotExists:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_detail(UserErrorCode.user_not_found, "User not found."),
+        )
 
 
 @admin_router.patch("/{id}", response_model=UserRead)
@@ -48,7 +53,10 @@ async def update_user(
     try:
         user = await user_manager.get(id)
     except UserNotExists:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_detail(UserErrorCode.user_not_found, "User not found."),
+        )
     return await user_manager.update(user_update, user, safe=False)
 
 
@@ -59,11 +67,17 @@ async def delete_user(
     user_manager: UserManager = Depends(get_user_manager),
 ):
     if id == requesting_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot delete your own account.")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=error_detail(UserErrorCode.cannot_delete_self, "You cannot delete your own account."),
+        )
     try:
         user = await user_manager.get(id)
     except UserNotExists:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_detail(UserErrorCode.user_not_found, "User not found."),
+        )
     await user_manager.delete(user)
 
 

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
@@ -28,6 +29,10 @@ app.add_middleware(
 app.include_router(api_router, prefix="/api")
 
 
-@app.get("/", name="root")
-def root():
-    return {"message": "Hello World"}
+class RootResponse(BaseModel):
+    message: str
+
+
+@app.get("/", name="root", response_model=RootResponse)
+def root() -> RootResponse:
+    return RootResponse(message="Hello World")
