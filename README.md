@@ -5,6 +5,9 @@
 [![Pydantic](https://img.shields.io/badge/Pydantic-E92063?logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-1a1a1a?logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![uv](https://img.shields.io/badge/uv-Package%20Manager-00C853)](https://docs.astral.sh/uv/)
+[![Ruff](https://img.shields.io/badge/Ruff-linter-FFE873?logo=ruff&logoColor=000)](https://docs.astral.sh/ruff/)
+[![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?logo=vercel&logoColor=white)](https://vercel.com/)
 
 A learning platform API built with FastAPI. Supports courses, enrollments, ratings, and role-based access (student, instructor, admin).
 
@@ -79,6 +82,7 @@ Docs: http://localhost:8000/docs
 | `alembic upgrade head` | Apply migrations |
 | `alembic revision --autogenerate -m "message"` | Create migration |
 | `pytest` | Run tests |
+| `pytest -n auto` | Run tests in parallel (pytest-xdist) |
 | `pytest --drop-test-db` | Run tests and drop test DB after |
 | `ruff check .` | Lint |
 | `ruff format .` | Format |
@@ -97,6 +101,7 @@ Tests use a separate DB (`{postgres_db}_test`). Migrations run automatically bef
 
 ```shell
 pytest -v
+pytest -n auto   # Parallel execution (pytest-xdist)
 ```
 
 Unit, integration, E2E, security, and smoke tests. See [docs/questions/test-types.md](docs/questions/test-types.md).
