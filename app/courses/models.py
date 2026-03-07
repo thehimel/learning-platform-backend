@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from datetime import datetime
+from decimal import Decimal
+from uuid import UUID
+
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
-    Column,
     ForeignKey,
     Index,
     Integer,
@@ -11,10 +16,10 @@ from sqlalchemy import (
     func,
     select,
 )
-from sqlalchemy.orm import column_property, relationship
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import Mapped, column_property, mapped_column, relationship
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
-from sqlalchemy.dialects.postgresql import UUID
 
 from app.database import Base
 
@@ -22,13 +27,15 @@ from app.database import Base
 class Course(Base):
     __tablename__ = "courses"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    published = Column(Boolean, server_default="FALSE", nullable=False)
-    rating = Column(Numeric(3, 1), nullable=True)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
-    updated_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"), onupdate=text("now()"))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str | None] = mapped_column(String, nullable=True)
+    published: Mapped[bool] = mapped_column(Boolean, server_default="FALSE", nullable=False)
+    rating: Mapped[Decimal | None] = mapped_column(Numeric(3, 1), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"), onupdate=text("now()")
+    )
 
     __table_args__ = (
         CheckConstraint("rating IS NULL OR (rating >= 1 AND rating <= 5)", name="ck_courses_rating_range"),
@@ -61,11 +68,15 @@ class Course(Base):
 class CourseInstructor(Base):
     __tablename__ = "course_instructors"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-    is_primary = Column(Boolean, server_default="FALSE", nullable=False)
-    added_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    course_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    is_primary: Mapped[bool] = mapped_column(Boolean, server_default="FALSE", nullable=False)
+    added_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
     __table_args__ = (UniqueConstraint("course_id", "user_id", name="uq_course_instructor"),)
 
@@ -76,11 +87,15 @@ class CourseInstructor(Base):
 class CourseRating(Base):
     __tablename__ = "course_ratings"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-    rating = Column(Numeric(3, 1), nullable=False)
-    created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    course_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    rating: Mapped[Decimal] = mapped_column(Numeric(3, 1), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
     __table_args__ = (
         UniqueConstraint("course_id", "user_id", name="uq_course_rating"),
@@ -94,10 +109,16 @@ class CourseRating(Base):
 class CourseEnrollment(Base):
     __tablename__ = "course_enrollments"
 
-    id = Column(Integer, primary_key=True, nullable=False)
-    course_id = Column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True)
-    enrolled_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
+    course_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    enrolled_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=text("now()")
+    )
 
     __table_args__ = (UniqueConstraint("course_id", "user_id", name="uq_course_enrollment"),)
 
