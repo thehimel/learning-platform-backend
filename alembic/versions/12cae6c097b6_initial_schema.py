@@ -1,19 +1,19 @@
-"""initial schema: user, courses, course_instructors, course_ratings, course_enrollments
+"""initial schema
 
-Revision ID: 56d30807de16
+Revision ID: 12cae6c097b6
 Revises: 
-Create Date: 2026-03-06 22:33:55.876904
+Create Date: 2026-05-18 04:21:41.179778
 
 """
 from typing import Sequence, Union
 
 from alembic import op
+import fastapi_users_db_sqlalchemy
 import sqlalchemy as sa
-from fastapi_users_db_sqlalchemy.generics import GUID
 
 
 # revision identifiers, used by Alembic.
-revision: str = '56d30807de16'
+revision: str = '12cae6c097b6'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,9 +33,10 @@ def upgrade() -> None:
     sa.CheckConstraint('rating IS NULL OR (rating >= 1 AND rating <= 5)', name='ck_courses_rating_range'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index('ix_courses_published_created_at_id', 'courses', ['created_at', 'id'], unique=False, postgresql_where=sa.text('published = true'), postgresql_ops={'created_at': 'DESC', 'id': 'DESC'})
     op.create_table('user',
     sa.Column('role', sa.Enum('student', 'instructor', 'admin', name='userrole'), server_default='student', nullable=False),
-    sa.Column('id', GUID(), nullable=False),
+    sa.Column('id', fastapi_users_db_sqlalchemy.generics.GUID(), nullable=False),
     sa.Column('email', sa.String(length=320), nullable=False),
     sa.Column('hashed_password', sa.String(length=1024), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
@@ -99,5 +100,6 @@ def downgrade() -> None:
     op.drop_table('course_enrollments')
     op.drop_index(op.f('ix_user_email'), table_name='user')
     op.drop_table('user')
+    op.drop_index('ix_courses_published_created_at_id', table_name='courses', postgresql_where=sa.text('published = true'), postgresql_ops={'created_at': 'DESC', 'id': 'DESC'})
     op.drop_table('courses')
     # ### end Alembic commands ###
