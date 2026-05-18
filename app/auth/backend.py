@@ -16,6 +16,7 @@ def get_jwt_strategy() -> JWTStrategy[models.UP, models.ID]:
     return JWTStrategy(
         secret=settings.jwt_secret_key,
         lifetime_seconds=settings.jwt_access_token_expire_minutes * 60,
+        algorithm=settings.jwt_algorithm,
     )
 
 
